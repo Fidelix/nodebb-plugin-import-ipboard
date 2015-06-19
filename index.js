@@ -1,3 +1,4 @@
+"use strict";
 
 var path = require('path');
 var async = require('async');
@@ -9,6 +10,7 @@ var noop = function(){};
 var pkg = fs.readJsonSync(path.join(__dirname, '/package.json'));
 var name = pkg.name.replace(/nodebb-plugin-import-/, '');
 var logPrefix = '[' + pkg.name + ']';
+var db = require('nodebb-plugin-import/server/data');
 
 (function(Exporter) {
 
@@ -133,7 +135,7 @@ var logPrefix = '[' + pkg.name + ']';
     };
 
     Exporter.getCategories = function(callback) {
-        return Exporter.getPaginatedCategories(0, -1, callback);    
+        return Exporter.getPaginatedCategories(0, -1, callback);
     };
     Exporter.getPaginatedCategories = function(start, limit, callback) {
 
@@ -251,7 +253,6 @@ var logPrefix = '[' + pkg.name + ']';
             + 'WHERE ' + prefix + 'posts.new_topic=0 '
             + (start >= 0 && limit >= 0 ? 'LIMIT ' + start + ',' + limit : '');
 
-
         Exporter.connection.query(query,
             function(err, rows) {
                 if (err) {
@@ -263,6 +264,25 @@ var logPrefix = '[' + pkg.name + ']';
                 var map = {};
                 rows.forEach(function(row) {
                     row._content = row._content || '';
+                    var ipb_reply_ex = /<blockquote[\s\S]{1,80}?data-cid="([\d]{1,10}?)"[\s\S]{0,100}?>([\s\S]+?)<\/blockquote>/gi;
+                    var reply_matches = ipb_reply_ex.exec(row._content);
+                    // We need to capture:
+                    // [0] The whole blockquote reply element;
+                    // [1] The content of the reply;
+                    // [2] The user being replied
+                    if (reply_matches && reply_matches.length == 3) {
+                        var username = 'Demetrius';
+                        var reply_key = '_imported_post:' + reply_matches[1];
+                        var imported_post = db.getObject(reply_key);
+
+                        var nbb_quote = '[[modules:composer.user_said, ' + username + ']]\n';
+                        nbb_quote += reply_matches[0];
+                        row._content.replace(reply_matches[0], nbb_quote);
+                    }
+
+                    // Checks for standard blockquotes
+                    // var quoted_content = reply_matches[2].replace(/\n/g, '\n> ') + '\n\n';
+
                     row._timestamp = ((row._timestamp || 0) * 1000) || startms;
                     map[row._pid] = row;
                 });
