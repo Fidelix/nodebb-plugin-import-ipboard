@@ -261,7 +261,6 @@ var logPrefix = '[' + pkg.name + ']';
 				+ prefix + 'posts.post as _content, '
 				+ prefix + 'posts.post_date as _timestamp, '
 				+ prefix + 'posts.ip_address as _ip, '
-				+ prefix + 'posts.post_parent as _toPid, '
 
 				+ prefix + 'posts.edit_time as _edited '
 
