@@ -91,7 +91,6 @@ var logPrefix = '[' + pkg.name + ']';
 				+ prefix + 'members.joined as _joindate, '
 				+ prefix + 'members.title as _badge, '
 				+ prefix + 'members.members_profile_views as _profileviews, '
-				+ prefix + 'members.hide_email as _showemail, '
 				+ prefix + 'members.member_banned as _banned, '
 				+ prefix + 'members.last_activity as _lastposttime, '
 				+ prefix + 'members.last_visit as _lastonline, '
@@ -126,8 +125,6 @@ var logPrefix = '[' + pkg.name + ']';
 							// let's check the group that this user belongs to and set the right privileges
 							row._level = groups[row._gid]._administrator > 0 && groups[row._gid]._moderator > 0 ? 'administrator' : groups[row._gid]._moderator > 0 ? 'moderator' : 'member';
 							row._banned = row._banned ? 1 : groups[row._gid]._notbanned > 0 ? 0 : 1;
-
-							row._showemail = !row._showemail;
 
 							row._lastposttime = row._lastposttime ? row._lastposttime * 1000 : null;
 							row._lastonline = row._lastonline ? row._lastonline * 1000 : null;
